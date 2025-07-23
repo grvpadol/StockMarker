@@ -8,6 +8,20 @@ var builder = WebApplication.CreateBuilder(args);
  * 1️⃣  CONFIGURATION + DEPENDENCY INJECTION
  * ------------------------------------------------------------------*/
 
+
+var configBuilder = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
+    .AddUserSecrets<Program>()
+    .AddEnvironmentVariables();
+
+var configuration = configBuilder.Build();
+
+
+builder.Configuration.AddConfiguration(configuration);
+
+
 // MongoDB configuration (reads the "MongoDB" section from appsettings.json)
 builder.Services.Configure<MongoDBSettings>(
     builder.Configuration.GetSection("MongoDB"));
