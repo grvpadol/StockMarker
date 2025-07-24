@@ -58,5 +58,21 @@ namespace StockMarker.Services
             await _stockCollection.InsertOneAsync(prediction);
         }
 
+        public async Task<List<StockPrediction>> GetTop5GainersAsync()
+        {
+            return await _stockCollection.Find(_ => true)
+                .SortByDescending(stock => stock.ChangePercentage)
+                .Limit(5)
+                .ToListAsync();
+        }
+
+        public async Task<List<StockPrediction>> GetTop5LosersAsync()
+        {
+            return await _stockCollection.Find(_ => true)
+                .SortBy(stock => stock.ChangePercentage)
+                .Limit(5)
+                .ToListAsync();
+        }
+
     }
  }

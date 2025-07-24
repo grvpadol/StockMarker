@@ -67,5 +67,35 @@ namespace StockMarker.Controller
 
             return Ok(new { Symbol = symbol.ToUpper(), Price = price });
         }
+
+        [HttpGet("top-movers")]
+        public async Task<IActionResult> GetTopMovers()
+        {
+            var allStocks = await _marketService.GetLiveStockData(); // Implement this method next
+
+            var topGainers = allStocks
+                .OrderByDescending(s => s.ChangePercent)
+                .Take(5)
+                .ToList();
+
+            var topLosers = allStocks
+                .OrderBy(s => s.ChangePercent)
+                .Take(5)
+                .ToList();
+
+            return Ok(new
+            {
+                Gainers = topGainers,
+                Losers = topLosers
+            });
+        }
+
+        [HttpGet("live")]
+        public async Task<IActionResult> GetLiveScanning()
+        {
+            var allStocks = await _marketService.GetLiveStockData(); // Same helper method
+            return Ok(allStocks);
+        }
+
     }
 }

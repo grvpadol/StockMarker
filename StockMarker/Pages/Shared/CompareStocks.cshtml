@@ -1,0 +1,66 @@
+﻿@page
+@model CompareStocksModel
+@{
+    ViewData["Title"] = "Compare Stocks";
+}
+
+<h2>📊 Compare Multiple Stocks</h2>
+
+<form method="post">
+    <label for="symbols">Enter stock symbols (comma-separated):</label>
+    <input type="text" id="symbols" name="Symbols" value="@Model.Symbols" required />
+    <button type="submit">Compare</button>
+</form>
+
+@if (Model.Stocks != null && Model.Stocks.Any())
+{
+    <div class="row mt-4">
+        @foreach (var stock in Model.Stocks)
+        {
+            <div class="col-md-6 mb-4">
+                <div class="card p-3 shadow-sm">
+                    <h5>@stock.Symbol</h5>
+                    <p>Price: @stock.CurrentPrice</p>
+                    <p>% Change: @stock.ChangePercent</p>
+                    <canvas id="chart-@stock.Symbol" height="200"></canvas>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const stockData = @Html.Raw(Json.Serialize(Model.Stocks));
+
+        stockData.forEach(stock => {
+            const ctx = document.getElementById('chart-' + stock.symbol).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [stock.symbol],
+                    datasets: [{
+                        label: '% Change',
+                        data: [stock.changePercent],
+                        backgroundColor: stock.changePercent > 0 ? 'rgba(0, 200, 83, 0.7)' : 'rgba(255, 82, 82, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => value + "%"
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

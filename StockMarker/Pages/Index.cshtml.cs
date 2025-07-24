@@ -44,4 +44,22 @@ public class IndexModel : PageModel
         ResponseMessage = "Prediction saved successfully!";
         return Page();
     }
+
+
+    public List<StockInfo> TopGainers { get; set; } = new();
+    public List<StockInfo> TopLosers { get; set; } = new();
+    public List<StockInfo> AllStocks { get; set; } = new();
+
+    public async Task OnGetAsync()
+    {
+        var allStocks = await _marketService.GetLiveStockData();
+
+        AllStocks = allStocks.OrderByDescending(x => Math.Abs(x.ChangePercent)).ToList();
+        TopGainers = allStocks.Where(x => x.ChangePercent > 0)
+                              .OrderByDescending(x => x.ChangePercent).Take(5).ToList();
+
+        TopLosers = allStocks.Where(x => x.ChangePercent < 0)
+                             .OrderBy(x => x.ChangePercent).Take(5).ToList();
+    }
+
 }

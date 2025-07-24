@@ -1,26 +1,133 @@
 ﻿@page
 @model IndexModel
+
 @{
     ViewData["Title"] = "Stock Price Prediction";
 }
 
-<h2>Stock Price Prediction</h2>
+<div class="hero-banner text-white text-center py-5 mb-4">
+    <h1>📊 Live Stock Trends & Predictions</h1>
+    <p class="lead">Powered by AI & Real-Time Market Data</p>
+</div>
 
-<form method="post">
-    <label for="symbol">Enter Stock Symbol:</label>
-    <input type="text" id="symbol" name="Symbol" value="@Model.Symbol" required />
-    <button type="submit">Fetch Price</button>
-</form>
+<div class="container">
+    <h2>📈 Stock Price Prediction</h2>
 
-@if (Model.ResponseMessage != null)
-{
-    <p>@Model.ResponseMessage</p>
-}
+    <form method="post" class="mb-4">
+        <label for="symbol">Enter Stock Symbol:</label>
+        <input type="text" id="symbol" name="Symbol" value="@Model.Symbol" required />
+        <button type="submit">Fetch Price</button>
+    </form>
 
-@if (Model.LatestPrice != null)
-{
-    <h3>Result</h3>
-    <p><strong>Symbol:</strong> @Model.Symbol</p>
-    <p><strong>Latest Price:</strong> @Model.LatestPrice</p>
-    <p><strong>Predicted Price:</strong> @Model.PredictedPrice</p>
+    @if (Model.ResponseMessage != null)
+    {
+        <p>@Model.ResponseMessage</p>
+    }
+
+    @if (Model.LatestPrice != null)
+    {
+        <div class="result">
+            <h3>🔍 Result</h3>
+            <p><strong>Symbol:</strong> @Model.Symbol</p>
+            <p><strong>Latest Price:</strong> @Model.LatestPrice</p>
+            <p><strong>Predicted Price:</strong> @Model.PredictedPrice</p>
+        </div>
+    }
+
+    <hr />
+
+    <h2>📈 Top 5 Gainers</h2>
+    <canvas id="gainersChart" width="400" height="200"></canvas>
+
+    <h2>📉 Top 5 Losers</h2>
+    <canvas id="losersChart" width="400" height="200"></canvas>
+
+    <h2>📋 Live Stock Table</h2>
+    <table class="table table-striped" id="stockTable">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Current Price</th>
+                <th>% Change</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stock in Model.AllStocks)
+            {
+                <tr class="@(stock.ChangePercent > 0 ? "table-success" : stock.ChangePercent < 0 ? "table-danger" : "")">
+                    <td>@stock.Symbol</td>
+                    <td>@stock.CurrentPrice.ToString("0.##")</td>
+                    <td>@stock.ChangePercent.ToString("0.##")%</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<section class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title">About This Project</h4>
+            <p>
+                StockPredictor Pro is a web-based tool that fetches real-time stock prices and predicts future trends using advanced machine learning techniques. This tool uses MongoDB to store data and ASP.NET Core for backend logic.
+            </p>
+            <p>
+                <strong>Features:</strong> Live scanning, predictive modeling, historical tracking, and more.
+            </p>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Get gainers and losers from Razor model
+        const gainers = @Html.Raw(Json.Serialize(Model.TopGainers));
+        const losers = @Html.Raw(Json.Serialize(Model.TopLosers));
+
+        // Gainers chart
+        const gainersChart = new Chart(document.getElementById('gainersChart'), {
+            type: 'bar',
+            data: {
+                labels: gainers.map(g => g.symbol),
+                datasets: [{
+                    label: '% Gain',
+                    data: gainers.map(g => g.changePercent),
+                    backgroundColor: 'rgba(0, 200, 83, 0.7)',
+                }]
+            }
+        });
+
+        // Losers chart
+        const losersChart = new Chart(document.getElementById('losersChart'), {
+            type: 'bar',
+            data: {
+                labels: losers.map(l => l.symbol),
+                datasets: [{
+                    label: '% Loss',
+                    data: losers.map(l => l.changePercent),
+                    backgroundColor: 'rgba(255, 82, 82, 0.7)',
+                }]
+            }
+        });
+
+        // Load live stock table
+        async function loadStockTable() {
+            const res = await fetch('/api/stock/all');
+            const data = await res.json();
+            const tbody = document.querySelector('#stockTable tbody');
+            tbody.innerHTML = '';
+            data.forEach(stock => {
+                const row = `<tr class="${stock.changePercentage > 0 ? 'table-success' : (stock.changePercentage < 0 ? 'table-danger' : '')}">
+                    <td>${stock.symbol}</td>
+                    <td>${stock.currentPrice.toFixed(2)}</td>
+                    <td>${stock.changePercentage.toFixed(2)}%</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        loadStockTable();
+        setInterval(loadStockTable, 15000); // Refresh every 15 seconds
+    </script>
 }

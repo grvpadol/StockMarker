@@ -30,5 +30,15 @@ namespace StockMarker.Models
 
         [BsonElement("confidence")]
         public double Confidence { get; set; }
+
+        public decimal CurrentPrice { get; set; }
+        public decimal OpenPrice { get; set; }
+        public decimal ChangePercentage
+        {
+            get
+            {
+                return OpenPrice != 0 ? ((CurrentPrice - OpenPrice) / OpenPrice) * 100 : 0;
+            }
+        }
     }
 }
