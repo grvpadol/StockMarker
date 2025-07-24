@@ -2,7 +2,7 @@
 using StockMarker.Models;     // <-- make sure these namespaces match your folders
 using StockMarker.Services;   // <--  "StockMarker" is your project root namespace
 
-var builder = WebApplication.CreateBuilder(args);
+
 
 /* ------------------------------------------------------------------
  * 1️⃣  CONFIGURATION + DEPENDENCY INJECTION
@@ -16,8 +16,9 @@ var configBuilder = new ConfigurationBuilder()
     .AddUserSecrets<Program>()
     .AddEnvironmentVariables();
 
-var configuration = configBuilder.Build();
+var configuration = configBuilder.Build(); 
 
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddConfiguration(configuration);
 

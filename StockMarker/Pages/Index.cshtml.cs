@@ -1,20 +1,47 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using StockMarker.Services;
+using StockMarker.Models;
 
-namespace StockMarker.Pages
+public class IndexModel : PageModel
 {
-    public class IndexModel : PageModel
+    private readonly StockPredictionService _stockService;
+    private readonly MarketDataService _marketService;
+
+    public IndexModel(StockPredictionService stockService, MarketDataService marketService)
     {
-        private readonly ILogger<IndexModel> _logger;
+        _stockService = stockService;
+        _marketService = marketService;
+    }
 
-        public IndexModel(ILogger<IndexModel> logger)
+    [BindProperty]
+    public string Symbol { get; set; }
+
+    public decimal? LatestPrice { get; set; }
+    public double? PredictedPrice { get; set; }
+    public string? ResponseMessage { get; set; }
+
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (string.IsNullOrEmpty(Symbol))
         {
-            _logger = logger;
+            ResponseMessage = "Please enter a valid stock symbol.";
+            return Page();
         }
 
-        public void OnGet()
+        var latestPrice = await _marketService.GetLatestPriceAsync(Symbol);
+        if (latestPrice == null)
         {
-
+            ResponseMessage = "Could not fetch latest price.";
+            return Page();
         }
+
+        LatestPrice = latestPrice.Value;
+        PredictedPrice = Math.Round((double)(latestPrice.Value * 1.05m), 2);
+
+        await _stockService.InsertCurrentPriceAsync(Symbol, latestPrice.Value);
+
+        ResponseMessage = "Prediction saved successfully!";
+        return Page();
     }
 }

@@ -1,10 +1,26 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Stock Price Prediction";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h2>Stock Price Prediction</h2>
+
+<form method="post">
+    <label for="symbol">Enter Stock Symbol:</label>
+    <input type="text" id="symbol" name="Symbol" value="@Model.Symbol" required />
+    <button type="submit">Fetch Price</button>
+</form>
+
+@if (Model.ResponseMessage != null)
+{
+    <p>@Model.ResponseMessage</p>
+}
+
+@if (Model.LatestPrice != null)
+{
+    <h3>Result</h3>
+    <p><strong>Symbol:</strong> @Model.Symbol</p>
+    <p><strong>Latest Price:</strong> @Model.LatestPrice</p>
+    <p><strong>Predicted Price:</strong> @Model.PredictedPrice</p>
+}

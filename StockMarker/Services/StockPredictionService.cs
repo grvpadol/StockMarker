@@ -15,7 +15,14 @@ namespace StockMarker.Services
             private readonly IMongoCollection<StockPrediction> _stockCollection;
         public StockPredictionService(IOptions<MongoDBSettings> mongoSettings)
             {
-                var mongoClient = new MongoClient(mongoSettings.Value.ConnectionString);
+            var settings = mongoSettings.Value;
+
+            var client = new MongoClient(settings.ConnectionString);
+            var database = client.GetDatabase(settings.DatabaseName);
+
+            _stockCollection = database.GetCollection<StockPrediction>(settings.CollectionName);
+        
+            var mongoClient = new MongoClient(mongoSettings.Value.ConnectionString);
                 var mongoDatabase = mongoClient.GetDatabase(mongoSettings.Value.DatabaseName);
                 _predictionsCollection = mongoDatabase.GetCollection<StockPrediction>(mongoSettings.Value.CollectionName);
             }
